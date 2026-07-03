@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reusable Hardened Global Helpers
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    function existing() { 
+      return resource.data; 
+    }
+    
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+
+    // Bootstrapped Admin Verification
+    function isAdmin() {
+      return isSignedIn() && 
+             request.auth.token.email_verified == true && 
+             request.auth.token.email == "krishnan989756@gmail.com";
+    }
+
+    // Lead Entity Schema Validation Helper
+    function isValidLead(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'service', 'message', 'timestamp', 'status']) &&
+             data.keys().size() == 7 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.email is string && data.email.size() <= 150 &&
+             data.service is string && data.service.size() <= 150 &&
+             data.message is string && data.message.size() <= 1000 &&
+             data.timestamp is string && data.timestamp.size() <= 100 &&
+             data.status in ['new', 'contacted', 'closed'];
+    }
+
+    // AuditRequest Entity Schema Validation Helper
+    function isValidAudit(data) {
+      return data.keys().hasAll(['id', 'objective', 'budget', 'email', 'timestamp', 'status']) &&
+             data.keys().size() == 6 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.objective is string && data.objective.size() > 0 && data.objective.size() <= 1000 &&
+             data.budget is string && data.budget.size() <= 150 &&
+             data.email is string && data.email.size() <= 150 &&
+             data.timestamp is string && data.timestamp.size() <= 100 &&
+             data.status in ['pending', 'analyzing', 'completed'];
+    }
+
+    // Leads collection
+    match /leads/{leadId} {
+      allow create: if isValidId(leadId) && isValidLead(incoming());
+      allow get, list, delete: if isAdmin();
+      allow update: if isAdmin() && isValidLead(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+      );
+    }
+
+    // Audits collection
+    match /audits/{auditId} {
+      allow create: if isValidId(auditId) && isValidAudit(incoming());
+      allow get, list, delete: if isAdmin();
+      allow update: if isAdmin() && isValidAudit(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+      );
+    }
+  }
+}

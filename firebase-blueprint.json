@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Lead": {
+      "title": "Lead",
+      "description": "Information collected from prospective clients via contact form",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the lead" },
+        "name": { "type": "string", "description": "Full name of the contact person" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "service": { "type": "string", "description": "The service they are interested in" },
+        "message": { "type": "string", "description": "The message they left" },
+        "timestamp": { "type": "string", "description": "When the lead was submitted" },
+        "status": { "type": "string", "enum": ["new", "contacted", "closed"], "description": "Processing state of the lead" }
+      },
+      "required": ["id", "name", "email", "service", "message", "timestamp", "status"]
+    },
+    "AuditRequest": {
+      "title": "AuditRequest",
+      "description": "Request submitted for a customized digital marketing and tech audit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the audit request" },
+        "objective": { "type": "string", "description": "Primary goal or objective for the audit" },
+        "budget": { "type": "string", "description": "Monthly digital marketing budget range" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "timestamp": { "type": "string", "description": "When the audit was requested" },
+        "status": { "type": "string", "enum": ["pending", "analyzing", "completed"], "description": "Status of the audit processing" }
+      },
+      "required": ["id", "objective", "budget", "email", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "leads": {
+      "schema": "Lead",
+      "description": "Store all incoming customer leads"
+    },
+    "audits": {
+      "schema": "AuditRequest",
+      "description": "Store all incoming digital audit requests"
+    }
+  }
+}

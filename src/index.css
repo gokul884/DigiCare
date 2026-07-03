@@ -1,0 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Font Family Definitions */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-headline: "Montserrat", sans-serif;
+  --font-display: "Montserrat", sans-serif;
+
+  /* Custom Theme Colors mapped from Kinetic Precision (Facebook Blue and White Palette) */
+  --color-background: #f4f6f9;
+  --color-on-background: #1c1e21;
+  --color-surface: #ffffff;
+  --color-surface-dim: #e4e6eb;
+  --color-surface-bright: #ffffff;
+  --color-surface-container: #ebedf0;
+  --color-surface-container-low: #f0f2f5;
+  --color-surface-container-high: #e4e6eb;
+  --color-surface-container-highest: #ccd0d5;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface: #1c1e21;
+  --color-on-surface-variant: #4b4f56;
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #f5f6f7;
+  --color-outline: #8b9dc3;
+  --color-outline-variant: #dfe3ee;
+  --color-surface-tint: #1877F2;
+  
+  --color-primary: #1877F2;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #3b5998;
+  --color-on-primary-container: #ffffff;
+  --color-inverse-primary: #8b9dc3;
+  
+  --color-secondary: #4b4f56;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #dfe3ee;
+  --color-on-secondary-container: #1d2a4a;
+  
+  --color-tertiary: #606770;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #8b9dc3;
+  --color-on-tertiary-container: #001d4a;
+  
+  --color-error: #fa3e3e;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffebe9;
+  --color-on-error-container: #900000;
+  
+  --color-primary-fixed: #dfe3ee;
+  --color-primary-fixed-dim: #8b9dc3;
+  --color-on-primary-fixed: #001d4a;
+  --color-on-primary-fixed-variant: #3b5998;
+  
+  --color-secondary-fixed: #dfe3ee;
+  --color-secondary-fixed-dim: #8b9dc3;
+  --color-on-secondary-fixed: #001d4a;
+  --color-on-secondary-fixed-variant: #3b5998;
+  
+  --color-tertiary-fixed: #dfe3ee;
+  --color-tertiary-fixed-dim: #8b9dc3;
+  --color-on-tertiary-fixed: #001d4a;
+  --color-on-tertiary-fixed-variant: #3b5998;
+  
+  --color-surface-variant: #ccd0d5;
+
+  /* Custom Transitions & Shadows */
+  --shadow-soft: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+/* Custom styles and smooth animation utility classes */
+.micro-lift {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.micro-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Unified Layout & Spacing Classes */
+.px-margin-mobile {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+@media (min-width: 768px) {
+  .md\:px-margin-desktop {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+@media (min-width: 1024px) {
+  .lg\:px-margin-desktop {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+.max-w-container-max {
+  max-width: 1280px;
+}
+
+/* Typography System Sizing & Weight classes */
+.text-display-lg-mobile {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+@media (min-width: 768px) {
+  .md\:text-display-lg {
+    font-size: 3.75rem;
+    line-height: 4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+}
+.text-headline-lg {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+@media (max-width: 767px) {
+  .text-headline-lg {
+    font-size: 1.625rem;
+    line-height: 2.125rem;
+  }
+}
+.text-headline-md {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+}
+.text-body-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+.text-body-md {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-label-md {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+.font-label-md {
+  font-weight: 600;
+}
+
+/* Custom Micro Animations */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Print friendly styling for exporting articles as physical documents */
+@media print {
+  /* Hide typical web elements */
+  nav, footer, button, .no-print, [role="banner"], [role="navigation"] {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide everything under root except our main content and the specific printable article */
+  #root {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide non-printable blocks */
+  #navbar, #contact, #footer, .lg\:col-span-4, .comments-section, .back-share-header {
+    display: none !important;
+  }
+
+  /* Force only the printable article to be displayed */
+  .printable-article {
+    display: block !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+    color: #000000 !important;
+  }
+
+  .printable-article h1 {
+    font-size: 24pt !important;
+    margin-top: 0 !important;
+    margin-bottom: 12pt !important;
+    line-height: 1.2 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+  }
+
+  .printable-article h2 {
+    font-size: 18pt !important;
+    margin-top: 18pt !important;
+    margin-bottom: 8pt !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+  }
+
+  .printable-article h3 {
+    font-size: 14pt !important;
+    margin-top: 14pt !important;
+    margin-bottom: 6pt !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+  }
+
+  .printable-article p, 
+  .printable-article li {
+    font-size: 11pt !important;
+    color: #111111 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Premium author information block print layout */
+  .author-block-print {
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Page break rules for elements */
+  h1, h2, h3, h4, .author-block-print, img {
+    page-break-inside: avoid !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 15px auto !important;
+    border-radius: 6px !important;
+  }
+
+  @page {
+    margin: 2cm;
+    size: portrait;
+  }
+}
+
+
