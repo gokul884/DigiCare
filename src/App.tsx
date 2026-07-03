@@ -35,6 +35,35 @@ export default function App() {
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
+  // Newsletter Subscription state
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+
+    setNewsletterLoading(true);
+    try {
+      await handleAddLead({
+        name: 'Newsletter Subscriber',
+        email: newsletterEmail.trim(),
+        service: 'Newsletter',
+        message: 'Subscribed to monthly growth insights newsletter.'
+      });
+      setNewsletterSuccess(true);
+      setNewsletterEmail('');
+      setTimeout(() => {
+        setNewsletterSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Newsletter subscription failed:', err);
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
+
   // Monitor Scroll position for Back to Top button
   useEffect(() => {
     const handleScroll = () => {
@@ -76,11 +105,11 @@ export default function App() {
 
     if (readingArticle) {
       // 1. Dynamic metadata when reading a specific blog article
-      const postTitle = `${readingArticle.title} | Gokul Krisnan Digital`;
+      const postTitle = `${readingArticle.title} | DigiCare`;
       const postDesc = readingArticle.description;
       const postKeywords = readingArticle.metaKeywords 
-        ? `${readingArticle.metaKeywords}, ${readingArticle.category}, SEO, GEO, Web Development, Salem, Tamil Nadu, Gokul Krisnan Digital`
-        : `${readingArticle.category}, ${readingArticle.title}, SEO, GEO, Web Development, Salem, Tamil Nadu, Gokul Krisnan Digital`;
+        ? `${readingArticle.metaKeywords}, ${readingArticle.category}, SEO, GEO, Web Development, DigiCare`
+        : `${readingArticle.category}, ${readingArticle.title}, SEO, GEO, Web Development, DigiCare`;
       const postAuthor = readingArticle.author;
       const postImage = readingArticle.image;
       const postUrl = `https://gokulkrisnan-digital.web.app/blog/${readingArticle.id}`;
@@ -105,16 +134,16 @@ export default function App() {
 
     } else if (currentView === 'blogs') {
       // 2. Dynamic metadata for the Blog Listing view
-      const blogsTitle = "Growth & Tech Insights Blog | Gokul Krisnan Digital";
+      const blogsTitle = "Growth & Tech Insights Blog | DigiCare";
       const blogsDesc = "Read expert articles, guides, and case studies on modern SEO, Generative Engine Optimization (GEO), custom website development, and content strategy.";
-      const blogsKeywords = "blog, digital marketing insights, search engine optimization tips, generative engine optimization, content creation guides, Gokul Krisnan";
+      const blogsKeywords = "blog, digital marketing insights, search engine optimization tips, generative engine optimization, content creation guides, DigiCare";
       const blogsUrl = "https://gokulkrisnan-digital.web.app/blog";
       const blogsImage = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=1200";
 
       document.title = blogsTitle;
       updateOrCreateMeta('description', blogsDesc);
       updateOrCreateMeta('keywords', blogsKeywords);
-      updateOrCreateMeta('author', 'Gokul Krisnan');
+      updateOrCreateMeta('author', 'DigiCare');
       updateCanonical(blogsUrl);
 
       // Open Graph
@@ -131,16 +160,16 @@ export default function App() {
 
     } else {
       // 3. Reset/Restore main homepage SEO metadata
-      const homeTitle = "Gokul Krisnan Digital | Best SEO, GEO & Web Development Agency in Salem, Tamil Nadu";
-      const homeDesc = "Gokul Krisnan Digital is a premium marketing & web agency in Salem, Tamil Nadu, India. Specializing in Search Engine Optimization (SEO), Website Development, Generative Engine Optimization (GEO), Content Creation, and Poster Design.";
-      const homeKeywords = "SEO, GEO, Generative Engine Optimization, Search Engine Optimization, Website Development, Content Creation, Poster Creation, Gokul Krisnan, Salem, Tamil Nadu, India, digital marketing, ChatGPT search optimization, Gemini visibility, Perplexity optimization";
+      const homeTitle = "DigiCare | Best SEO, GEO & Web Performance Agency";
+      const homeDesc = "DigiCare is a high-performance digital marketing agency featuring advanced SEO, GEO, PPC, analytics services, client case studies, dynamic testimonial carousels, and an interactive contact manager.";
+      const homeKeywords = "SEO, GEO, Generative Engine Optimization, Search Engine Optimization, Website Development, Content Creation, DigiCare, digital marketing, ChatGPT search optimization, Gemini visibility, Perplexity optimization";
       const homeUrl = "https://gokulkrisnan-digital.web.app/";
       const homeImage = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=1200";
 
       document.title = homeTitle;
       updateOrCreateMeta('description', homeDesc);
       updateOrCreateMeta('keywords', homeKeywords);
-      updateOrCreateMeta('author', 'Gokul Krisnan');
+      updateOrCreateMeta('author', 'DigiCare');
       updateCanonical(homeUrl);
 
       // Open Graph
@@ -509,7 +538,7 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             
             {/* Branding & Mission details */}
-            <div className="space-y-4 col-span-1 md:col-span-3">
+            <div className="space-y-4 col-span-1 md:col-span-2">
               <div className="flex items-center gap-2.5">
                 <CompanyLogo className="w-8 h-8 shrink-0" />
                 <div className="flex flex-col items-start -space-y-1">
@@ -618,6 +647,44 @@ export default function App() {
                   </button>
                 </li>
               </ul>
+            </div>
+
+            {/* Newsletter Signup */}
+            <div className="space-y-3 text-xs col-span-1 md:col-span-1">
+              <p className="font-headline font-bold text-xs uppercase tracking-wider text-white">
+                Newsletter
+              </p>
+              <p className="text-secondary-fixed opacity-70 leading-relaxed">
+                Get monthly growth insights, SEO strategies & web performance tips.
+              </p>
+              {newsletterSuccess ? (
+                <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-green-400" />
+                  <span>Subscribed!</span>
+                </div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="space-y-2 mt-2">
+                  <div className="relative">
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="Your email address" 
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/35 text-xs focus:outline-none focus:ring-1 focus:ring-[#1877F2] focus:border-transparent transition-all"
+                      id="newsletter-email"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={newsletterLoading}
+                    className="w-full px-3 py-2 rounded-xl bg-white text-on-secondary-fixed hover:bg-gray-100 transition-all font-bold text-xs cursor-pointer shadow-sm flex items-center justify-center gap-1.5 active:scale-[0.98] disabled:opacity-50"
+                    id="newsletter-submit-btn"
+                  >
+                    {newsletterLoading ? 'Subscribing...' : 'Subscribe'}
+                  </button>
+                </form>
+              )}
             </div>
 
           </div>
