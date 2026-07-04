@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { BLOGS_DATA, BlogPost } from '../types';
 import ReactMarkdown from 'react-markdown';
+import OptimizedImage from './OptimizedImage';
 
 
 const parseInlineMarkdown = (text: string) => {

@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { TESTIMONIALS_DATA } from '../types';
+import OptimizedImage from './OptimizedImage';
 
 export default function Testimonials() {
   const [index, setIndex] = useState(0);
@@ -145,13 +146,11 @@ export default function Testimonials() {
 
                   {/* Profile header */}
                   <div className="flex items-center gap-4 border-t border-surface-variant/40 pt-4 mt-2">
-                    <img 
+                    <OptimizedImage 
                       className="w-12 h-12 rounded-full object-cover shadow-sm border border-surface-variant" 
                       alt={test.name}
                       src={test.avatar}
-                      loading="lazy"
-                      decoding="async"
-                      referrerPolicy="no-referrer"
+                      defaultWidth={96}
                     />
                     <div>
                       <p className="font-headline font-bold text-xs text-on-surface">

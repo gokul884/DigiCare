@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import OptimizedImage from './OptimizedImage';
 
 export default function About() {
   const [activePillar, setActivePillar] = useState<number | null>(null);
@@ -99,12 +100,11 @@ export default function About() {
             {/* Shifted Left Pillar Exterior building */}
             <div className="pt-12">
               <div className="rounded-2xl overflow-hidden shadow-soft border border-surface-variant">
-                <img 
+                <OptimizedImage 
                   className="w-full h-80 object-cover hover:scale-105 transition-transform duration-500" 
                   alt="Minimalist office architecture"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6mNncGUb5Z53tbE7X7Ghq-qNEIRLGOtoVI1By8BoUiz4nb7kzkRefcZpLpTiJbfDcPF0THM82SQLiP7xcMVnIFwytvKS2zMWjHhWlgSsUOJJkX4ABOu03Ay015sqo4tkk1Ce_iwSANHHJwXt5RiWaeiNsvRk4cJNX9MyIVjRMnRwx6JLOwzFJYUDdeVaxPAnGOOPApdtlKswwnPPa60GDccJZ_bnl0Y6cv9hI-uj3hdyyBKXnqSfchA"
-                  loading="lazy"
-                  decoding="async"
+                  defaultWidth={600}
                 />
               </div>
             </div>
@@ -112,12 +112,11 @@ export default function About() {
             {/* Shifted Right Workspace layout */}
             <div>
               <div className="rounded-2xl overflow-hidden shadow-soft border border-surface-variant">
-                <img 
+                <OptimizedImage 
                   className="w-full h-80 object-cover hover:scale-105 transition-transform duration-500" 
                   alt="Modern creative workspace setup"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6KAeOMhQEGnzTxJY9yYpxPcvXcVff_PUshuuy-7x9NPordRFCnYj5ZSzhw1ti1uWCdd32ZfIdeWP8UH23RInuVoiniJngIwyterebasseHoUs3K6TCHOKkou-1GeLMjUKE31d1-Fr9VlmgV7RT5GwYCvakgRizWVrxov7I5Fp5bHXDwIMEzAG4itrafXxR2L1AaIow49hGDcorUT4EUOvRMOipwsGrRZBAapacUAS8OeUu5EsNEqdCQ"
-                  loading="lazy"
-                  decoding="async"
+                  defaultWidth={600}
                 />
               </div>
             </div>

@@ -16,6 +16,7 @@ import ContactForm from './components/ContactForm';
 import InteractiveAuditModal from './components/InteractiveAuditModal';
 import AnalyticsDashboardModal from './components/AnalyticsDashboardModal';
 import AdminPanel from './components/AdminPanel';
+import OptimizedImage from './components/OptimizedImage';
 import { Lead, AuditRequest, BlogPost, BLOGS_DATA } from './types';
 import { Mail, Phone, MapPin, Globe, ShieldCheck, Heart, Clock, ArrowUpRight, Instagram, Facebook, Linkedin, ArrowUp } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -457,13 +458,11 @@ export default function App() {
                       <div>
                         {/* Card Image banner */}
                         <div className="rounded-2xl overflow-hidden aspect-[16/10] border border-surface-variant/40 shadow-sm relative">
-                          <img 
+                          <OptimizedImage 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                             alt={post.title}
                             src={post.image}
-                            loading="lazy"
-                            decoding="async"
-                            referrerPolicy="no-referrer"
+                            defaultWidth={400}
                           />
                           <div className="absolute top-3 left-3 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-bold text-primary shadow-sm">
                             {post.category}
@@ -492,13 +491,11 @@ export default function App() {
 
                       <div className="pt-2 flex items-center justify-between border-t border-surface-variant/30 mt-2">
                         <div className="flex items-center gap-2">
-                          <img 
+                          <OptimizedImage 
                             className="w-6 h-6 rounded-full object-cover" 
                             src={post.authorAvatar} 
                             alt={post.author} 
-                            loading="lazy"
-                            decoding="async"
-                            referrerPolicy="no-referrer"
+                            defaultWidth={48}
                           />
                           <span className="text-[10px] text-on-surface font-semibold">{post.author}</span>
                         </div>
