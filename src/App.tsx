@@ -140,52 +140,83 @@ export default function App() {
     }
   }, [currentView, readingArticle]);
 
-  // Monitor Authentication state
+  // Monitor Authentication state (Deferred to post-first-paint idle callback)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
+    let unsubscribe: (() => void) | undefined;
+    
+    const setupAuth = () => {
+      unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => setupAuth());
+      } else {
+        setTimeout(setupAuth, 200);
+      }
+    } else {
+      setupAuth();
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
-  // Sync leads & audits in real-time from Firestore IF admin is signed in
+  // Sync leads & audits in real-time from Firestore IF admin is signed in (Deferred)
   useEffect(() => {
     const isAdminUser = user?.email === 'krishnan989756@gmail.com' && user?.emailVerified;
+    let unsubscribeLeads: (() => void) | undefined;
+    let unsubscribeAudits: (() => void) | undefined;
     
     if (isAdminUser) {
-      const unsubscribeLeads = onSnapshot(collection(db, 'leads'), (snapshot) => {
-        const loadedLeads: Lead[] = [];
-        snapshot.forEach((doc) => {
-          loadedLeads.push(doc.data() as Lead);
+      const setupListeners = () => {
+        unsubscribeLeads = onSnapshot(collection(db, 'leads'), (snapshot) => {
+          const loadedLeads: Lead[] = [];
+          snapshot.forEach((doc) => {
+            loadedLeads.push(doc.data() as Lead);
+          });
+          loadedLeads.sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime();
+            const timeB = new Date(b.timestamp).getTime();
+            return (timeB || 0) - (timeA || 0);
+          });
+          setLeads(loadedLeads);
+        }, (error) => {
+          handleFirestoreError(error, OperationType.LIST, 'leads');
         });
-        loadedLeads.sort((a, b) => {
-          const timeA = new Date(a.timestamp).getTime();
-          const timeB = new Date(b.timestamp).getTime();
-          return (timeB || 0) - (timeA || 0);
-        });
-        setLeads(loadedLeads);
-      }, (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'leads');
-      });
 
-      const unsubscribeAudits = onSnapshot(collection(db, 'audits'), (snapshot) => {
-        const loadedAudits: AuditRequest[] = [];
-        snapshot.forEach((doc) => {
-          loadedAudits.push(doc.data() as AuditRequest);
+        unsubscribeAudits = onSnapshot(collection(db, 'audits'), (snapshot) => {
+          const loadedAudits: AuditRequest[] = [];
+          snapshot.forEach((doc) => {
+            loadedAudits.push(doc.data() as AuditRequest);
+          });
+          loadedAudits.sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime();
+            const timeB = new Date(b.timestamp).getTime();
+            return (timeB || 0) - (timeA || 0);
+          });
+          setAudits(loadedAudits);
+        }, (error) => {
+          handleFirestoreError(error, OperationType.LIST, 'audits');
         });
-        loadedAudits.sort((a, b) => {
-          const timeA = new Date(a.timestamp).getTime();
-          const timeB = new Date(b.timestamp).getTime();
-          return (timeB || 0) - (timeA || 0);
-        });
-        setAudits(loadedAudits);
-      }, (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'audits');
-      });
+      };
+
+      if (typeof window !== 'undefined') {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(() => setupListeners());
+        } else {
+          setTimeout(setupListeners, 200);
+        }
+      } else {
+        setupListeners();
+      }
 
       return () => {
-        unsubscribeLeads();
-        unsubscribeAudits();
+        if (unsubscribeLeads) unsubscribeLeads();
+        if (unsubscribeAudits) unsubscribeAudits();
       };
     } else {
       const savedLeads = localStorage.getItem('growthpulse_leads');
@@ -358,7 +389,7 @@ export default function App() {
             />
 
             {/* Brand partners horizontal ticket band (Marquee Ticker) */}
-            <div className="bg-[#1877F2] py-6 border-y border-[#1877F2]/10 overflow-hidden relative z-10">
+            <div className="bg-[#1A56DB] py-6 border-y border-[#1A56DB]/10 overflow-hidden relative z-10">
               <div className="animate-marquee flex items-center gap-12 text-white font-headline font-bold text-xs md:text-sm tracking-widest uppercase">
                 {/* First Set of Words */}
                 <span className="shrink-0 flex items-center gap-4">Search Engine Optimization <span className="text-[#E7F3FF] text-lg font-black">•</span></span>
@@ -627,7 +658,7 @@ export default function App() {
                       placeholder="Your email address" 
                       value={newsletterEmail}
                       onChange={(e) => setNewsletterEmail(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/35 text-xs focus:outline-none focus:ring-1 focus:ring-[#1877F2] focus:border-transparent transition-all"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/35 text-xs focus:outline-none focus:ring-1 focus:ring-[#1A56DB] focus:border-transparent transition-all"
                       id="newsletter-email"
                     />
                   </div>
@@ -694,7 +725,7 @@ export default function App() {
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 p-3.5 rounded-full bg-[#1877F2] hover:bg-[#0e5fc2] text-white shadow-xl shadow-black/15 hover:shadow-black/25 active:scale-95 hover:scale-105 transition-all duration-300 z-50 flex items-center justify-center cursor-pointer group border border-white/10"
+          className="fixed bottom-6 right-6 p-3.5 rounded-full bg-[#1A56DB] hover:bg-[#0b3b9c] text-white shadow-xl shadow-black/15 hover:shadow-black/25 active:scale-95 hover:scale-105 transition-all duration-300 z-50 flex items-center justify-center cursor-pointer group border border-white/10"
           aria-label="Back to top"
           id="back-to-top"
         >

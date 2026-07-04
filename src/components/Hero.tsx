@@ -22,7 +22,7 @@ export default function Hero({ onGetStartedClick, onViewCaseStudiesClick }: Hero
           
           {/* Hero Text Info matching the attached image perfectly */}
           <div className="lg:col-span-6 space-y-8">
-            <h1 className="font-display font-black text-display-lg-mobile md:text-display-lg lg:text-[4.5rem] text-[#1877F2] leading-[1.02] tracking-tighter">
+            <h1 className="font-display font-black text-display-lg-mobile md:text-display-lg lg:text-[4.5rem] text-[#1A56DB] leading-[1.02] tracking-tighter">
               Rank First. Grow Faster. <br />
               Best SEO & Web <br />
               Performance Agency.
@@ -35,7 +35,7 @@ export default function Hero({ onGetStartedClick, onViewCaseStudiesClick }: Hero
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 onClick={onGetStartedClick}
-                className="bg-[#1877F2] hover:bg-[#0e5fc2] text-white px-8 py-4 rounded-full font-headline font-bold text-base shadow-md shadow-blue-500/10 hover:shadow-lg hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className="bg-[#1A56DB] hover:bg-[#0b3b9c] text-white px-8 py-4 rounded-full font-headline font-bold text-base shadow-md shadow-blue-500/10 hover:shadow-lg hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                 id="hero-get-started"
               >
                 Grow With Us
@@ -43,7 +43,7 @@ export default function Hero({ onGetStartedClick, onViewCaseStudiesClick }: Hero
 
               <button
                 onClick={onViewCaseStudiesClick}
-                className="border-2 border-[#1877F2]/20 hover:border-[#1877F2] text-[#1877F2] px-8 py-4 rounded-full font-headline font-bold text-base hover:bg-white/40 hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className="border-2 border-[#1A56DB]/20 hover:border-[#1A56DB] text-[#1A56DB] px-8 py-4 rounded-full font-headline font-bold text-base hover:bg-white/40 hover:scale-[1.02] active:scale-98 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                 id="hero-view-case"
               >
                 Case Studies

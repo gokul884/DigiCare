@@ -121,7 +121,7 @@ export default function ContactForm({ onAddLead }: ContactFormProps) {
                   <MapPin className="w-5.5 h-5.5 text-primary-container" />
                 </div>
                 <div>
-                  <h4 className="font-headline font-bold text-sm text-white">Our Studio</h4>
+                  <h3 className="font-headline font-bold text-sm text-white">Our Studio</h3>
                   <p className="text-xs text-secondary-fixed opacity-70 mt-1 leading-relaxed">
                     Salem , TamilNadu ,India
                   </p>
@@ -134,7 +134,7 @@ export default function ContactForm({ onAddLead }: ContactFormProps) {
                   <Mail className="w-5.5 h-5.5 text-primary-container" />
                 </div>
                 <div>
-                  <h4 className="font-headline font-bold text-sm text-white">Email Us</h4>
+                  <h3 className="font-headline font-bold text-sm text-white">Email Us</h3>
                   <p className="text-xs text-secondary-fixed opacity-70 mt-1">
                     gokulkrisnan.digital@gmail.com
                   </p>
@@ -147,7 +147,7 @@ export default function ContactForm({ onAddLead }: ContactFormProps) {
                   <Phone className="w-5.5 h-5.5 text-primary-container" />
                 </div>
                 <div>
-                  <h4 className="font-headline font-bold text-sm text-white">Call Us</h4>
+                  <h3 className="font-headline font-bold text-sm text-white">Call Us</h3>
                   <p className="text-xs text-secondary-fixed opacity-70 mt-1">
                     +91 8667576957
                   </p>
@@ -201,8 +201,9 @@ export default function ContactForm({ onAddLead }: ContactFormProps) {
 
                   {/* Service Option */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-extrabold text-on-surface-variant block">Service of Interest</label>
+                    <label htmlFor="interest-service" className="text-xs font-extrabold text-on-surface-variant block">Service of Interest</label>
                     <select
+                      id="interest-service"
                       value={service}
                       onChange={(e) => setService(e.target.value)}
                       className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3.5 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all cursor-pointer"

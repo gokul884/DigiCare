@@ -70,16 +70,18 @@ export default function Testimonials() {
             </div>
 
             {/* Pagination Indicators */}
-            <div className="flex gap-2 justify-center lg:justify-start pt-1">
+            <div className="flex gap-1 justify-center lg:justify-start pt-1">
               {TESTIMONIALS_DATA.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setIndex(idx)}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === index ? 'w-6 bg-primary-container' : 'w-2 bg-outline-variant/60'
-                  }`}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 transition-all cursor-pointer"
                   aria-label={`Go to slide ${idx + 1}`}
-                />
+                >
+                  <span className={`h-2 rounded-full transition-all ${
+                    idx === index ? 'w-6 bg-primary-container' : 'w-2 bg-outline-variant/60'
+                  }`} />
+                </button>
               ))}
             </div>
 

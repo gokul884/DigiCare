@@ -713,8 +713,8 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
                                 onClick={() => handleReactComment(comment.id, 'like')}
                                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-all active:scale-90 select-none ${
                                   comment.myReaction === 'like'
-                                    ? 'bg-[#1877F2]/10 border-[#1877F2] text-[#1877F2]'
-                                    : 'bg-white border-surface-variant/30 text-on-surface-variant hover:bg-[#1877F2]/5 hover:text-[#1877F2]'
+                                    ? 'bg-[#1A56DB]/10 border-[#1A56DB] text-[#1A56DB]'
+                                    : 'bg-white border-surface-variant/30 text-on-surface-variant hover:bg-[#1A56DB]/5 hover:text-[#1A56DB]'
                                 }`}
                                 title="Like"
                               >

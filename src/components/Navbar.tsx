@@ -104,6 +104,8 @@ export default function Navbar({ onContactClick, onAdminToggle, isAdminOpen, lea
           <img 
             src="/logo-full-1.png" 
             alt="OmniRange Logo" 
+            width={220}
+            height={56}
             className="h-12 md:h-14 w-auto shrink-0 mix-blend-multiply" 
             referrerPolicy="no-referrer"
           />

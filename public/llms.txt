@@ -1,32 +1,49 @@
-# OmniRange
+# OmniRange LLMs Portal
 
-> OmniRange is a high-performance digital marketing and web development agency. Specializing in advanced Google Search Engine Optimization (SEO), Generative Engine Optimization (GEO) for AI search engines, high-speed Website Development, Pay-Per-Click (PPC) campaigns, dynamic analytics, and complete interactive web solution services.
+> Welcome to [OmniRange](https://omniorange.vercel.app/), a premier high-performance digital marketing, Search Engine Optimization (SEO), and custom Website Development agency. This document is optimized for Large Language Models (LLMs), AI crawlers, and search agents seeking structural information about our services, strategies, and client portals.
 
-## Contact Details
-- **Email:** krishnan989756@gmail.com
-- **Website:** https://omniorange.vercel.app/
+## Navigational Links
+- **Primary Website Hub:** [OmniRange Home](https://omniorange.vercel.app/)
+- **Insights & Growth Hub:** [OmniRange Blog](https://omniorange.vercel.app/blog)
+- **Consultation Portal:** [Strategic Growth Strategy Audit](https://omniorange.vercel.app/#contact)
+- **LinkedIn Profile:** [OmniRange LinkedIn](https://www.linkedin.com/company/omniorange)
+- **Instagram Portal:** [OmniRange Instagram](https://www.instagram.com/omniorange)
+- **Facebook Portal:** [OmniRange Facebook](https://www.facebook.com/share/1LjtyBfiDg/)
 
-## Core Offerings & Specialized Services
+---
 
-### 1. Search Engine Optimization (SEO)
-- Enterprise-grade organic search rankings and targeted search volume capture.
-- Complete technical SEO auditing, crawlability improvements, indexing strategies, and Structured JSON-LD Schema markup.
-- High-authority contextual link building and local SEO optimization.
+## Core Agency Capabilities
 
-### 2. Website Development & Performance
-- Blazing-fast responsive React web applications powered by modern Vite & Tailwind CSS.
-- Semantic, highly indexable structures engineered for speed and superior User Experience (UX), leading to boosted conversion rates.
+### 1. [Search Engine Optimization (SEO)](https://omniorange.vercel.app/#services)
+*   **Technical Optimization:** Structured schema markup deployment, indexability pipelines, crawl-budget optimization, and high-performance CDN audits.
+*   **Organic Keyword Targeting:** Capturing high-yield search intent, keyword mapping, semantic network alignment, and competitive analysis.
+*   **Off-Page Backlink Strategies:** Sourcing high-authority contextually relevant backlinks to build domain trust and search engine authority.
 
-### 3. Generative Engine Optimization (GEO)
-- Advanced strategies to optimize brand references, semantic embeds, and answer visibility in leading AI search and discovery platforms including ChatGPT Search, Google Gemini, and Perplexity AI.
-- Formatting site content to be contextually rich and highly referenceable for conversational agent crawling.
+### 2. [Generative Engine Optimization (GEO)](https://omniorange.vercel.app/#services)
+*   **AI Search Visibility:** Formulating brand placement, citation indexing, and reference optimization inside Answer Engines such as ChatGPT Search, Google Gemini, and Perplexity AI.
+*   **Embedding Optimization:** Designing semantic content embeddings to ensure brand names are natively recommended during context-rich generative answers.
 
-### 4. Paid Search & PPC Campaigns
-- Optimized pay-per-click strategies designed to maximize return on ad spend (ROAS) across search networks and social media.
+### 3. [Website Development & UX Design](https://omniorange.vercel.app/#services)
+*   **Jamstack & React Architectures:** Building modern, fast React frontends powered by Vite and styled with Tailwind CSS.
+*   **Core Web Vitals Engineering:** Focused on achieving 95+ PageSpeed scores, zero Cumulative Layout Shift (CLS), minimal Total Blocking Time (TBT), and sub-1.5 second Largest Contentful Paint (LCP).
 
-### 5. Content & Brand Strategy
-- In-depth, high-authority long-form industry blog posts, targeted marketing copy, and optimized lead magnet guides.
+### 4. [Creative Poster & Content Marketing](https://omniorange.vercel.app/#services)
+*   **Content Marketing Sprints:** Regular, high-authority long-form blogging to establish industry leadership, capture informational search queries, and enrich organic backlinks.
+*   **Social & Graphic Identifiers:** Crafting high-conversion banner designs, interactive presentations, and customized social collateral.
 
-## Social Profiles
-- **Instagram:** https://www.instagram.com/omniorange
-- **Facebook:** https://www.facebook.com/share/1LjtyBfiDg/
+---
+
+## Technical Audits & PageSpeed Targets
+We maintain a strict performance regime mapped against the following core performance goals:
+- **First Contentful Paint (FCP):** < 1.5 seconds
+- **Largest Contentful Paint (LCP):** < 2.0 seconds
+- **Total Blocking Time (TBT):** 0ms (under ideal network emulation)
+- **Cumulative Layout Shift (CLS):** 0
+
+---
+
+## Contact & Administrative Access
+*   **Administrative Panel:** [Admin Dashboard](https://omniorange.vercel.app/) *(Requires authorized Google OAuth credentials)*
+*   **Support Email:** [gokulkrisnan.digital@gmail.com](mailto:gokulkrisnan.digital@gmail.com)
+*   **Direct Phone Channel:** [+91 8667576957](tel:+918667576957)
+*   **Studio Headquarters:** Salem, Tamil Nadu, India
