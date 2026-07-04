@@ -33,7 +33,7 @@ export default function CompanyLogo({
   if (variant === 'full') {
     return (
       <img 
-        src="/logo-full.webp" 
+        src="/logo-full.png" 
         alt="OmniRange Logo with Tagline" 
         className={`${className} ${blendClass}`}
         referrerPolicy="no-referrer"
