@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/logo-fav.svg" />
     
-    <!-- Preconnect to Font Origins for faster font discovery -->
+    <!-- Preconnect to Font & Image Origins for faster visual discovery -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://digicare-e0e7d.firebaseapp.com" />
-    <link rel="preconnect" href="https://firestore.googleapis.com" />
     <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin />
-    <link rel="preconnect" href="https://apis.google.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- DNS Prefetch for secondary origins -->
+    <link rel="dns-prefetch" href="https://digicare-e0e7d.firebaseapp.com" />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+    <link rel="dns-prefetch" href="https://apis.google.com" />
+    
+    <!-- Asynchronous High-Performance Font Loading to eliminate render blocking -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+    </noscript>
     
     <!-- Professional Google SEO & AI GEO Meta Tags -->
     <title>OmniRange | Best SEO, GEO & Web Performance Agency</title>
