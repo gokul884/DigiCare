@@ -1,6 +1,6 @@
 # OmniRange
 
-OmniRange is a high-performance digital marketing and web development agency. Specializing in advanced Google Search Engine Optimization (SEO), Generative Engine Optimization (GEO) for AI search engines, high-speed Website Development, Pay-Per-Click (PPC) campaigns, dynamic analytics, and complete interactive web solution services.
+> OmniRange is a high-performance digital marketing and web development agency. Specializing in advanced Google Search Engine Optimization (SEO), Generative Engine Optimization (GEO) for AI search engines, high-speed Website Development, Pay-Per-Click (PPC) campaigns, dynamic analytics, and complete interactive web solution services.
 
 ## Contact Details
 - **Email:** krishnan989756@gmail.com

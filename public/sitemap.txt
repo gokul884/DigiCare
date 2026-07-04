@@ -1,7 +1,0 @@
-https://omniorange.vercel.app/
-https://omniorange.vercel.app/blog
-https://omniorange.vercel.app/blog/1
-https://omniorange.vercel.app/blog/2
-https://omniorange.vercel.app/blog/3
-https://omniorange.vercel.app/blog/4
-https://omniorange.vercel.app/blog/5
