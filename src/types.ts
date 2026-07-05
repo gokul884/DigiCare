@@ -50,7 +50,7 @@ export interface BlogPost {
   title: string;
   description: string;
   content: string;
-  category: 'Strategy' | 'SEO' | 'Creative';
+  category: string;
   date: string;
   image: string;
   author: string;

@@ -27,6 +27,7 @@ import {
   Printer
 } from 'lucide-react';
 import { BLOGS_DATA, BlogPost } from '../types';
+import { fetchBloggerFeed } from '../lib/blogger';
 import ReactMarkdown from 'react-markdown';
 import OptimizedImage from './OptimizedImage';
 
@@ -49,22 +50,63 @@ const parseInlineMarkdown = (text: string) => {
 interface BlogsProps {
   readingArticle: BlogPost | null;
   onSelectArticle: (post: BlogPost | null) => void;
+  livePosts?: BlogPost[];
+  isLoadingLive?: boolean;
+  liveError?: string | null;
 }
 
-export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
-  const [selectedCategory, setSelectedCategory] = useState<'All' | 'Strategy' | 'SEO' | 'Creative'>('All');
+export default function Blogs({ 
+  readingArticle, 
+  onSelectArticle, 
+  livePosts, 
+  isLoadingLive, 
+  liveError 
+}: BlogsProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Trigger loading briefly on category changes, search queries, or when going back to list
+  // Local state for feed data (with prop sync and self-contained fetching backup)
+  const [localPosts, setLocalPosts] = useState<BlogPost[]>([]);
+  const [localLoading, setLocalLoading] = useState(true);
+  const [localError, setLocalError] = useState<string | null>(null);
+
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [selectedCategory, searchQuery, readingArticle === null]);
+    if (livePosts && livePosts.length > 0) {
+      setLocalPosts(livePosts);
+      setLocalLoading(isLoadingLive ?? false);
+      setLocalError(liveError ?? null);
+    } else {
+      let isMounted = true;
+      setLocalLoading(true);
+      fetchBloggerFeed()
+        .then((data) => {
+          if (!isMounted) return;
+          setLocalPosts(data);
+          setLocalLoading(false);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          console.error('Failed to fetch Blogger feed inside Blogs.tsx:', err);
+          setLocalError('Unable to load our latest insights at this time. Please check your connection or try again later.');
+          setLocalLoading(false);
+        });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [livePosts, isLoadingLive, liveError]);
+
+  // Dynamically extract categories from live posts
+  const categories = useMemo(() => {
+    const labels = new Set<string>();
+    localPosts.forEach(post => {
+      if (post.category) {
+        labels.add(post.category);
+      }
+    });
+    return ['All', ...Array.from(labels)];
+  }, [localPosts]);
 
   // Dynamically inject BlogPosting JSON-LD for individual articles
   useEffect(() => {
@@ -165,7 +207,7 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
 
   // Filter and Search logic combined
   const filteredBlogs = useMemo(() => {
-    return BLOGS_DATA.filter((post) => {
+    return localPosts.filter((post) => {
       const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
       const matchesSearch = 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -173,7 +215,7 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
         post.category.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [localPosts, selectedCategory, searchQuery]);
 
   const handleShareArticle = (title: string) => {
     setCopiedLink(true);
@@ -262,29 +304,29 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
   // Sidebar Blogs (other than the current reading one)
   const sidebarBlogs = useMemo(() => {
     if (!readingArticle) return [];
-    return BLOGS_DATA.filter(post => post.id !== readingArticle.id);
-  }, [readingArticle]);
+    return localPosts.filter(post => post.id !== readingArticle.id);
+  }, [readingArticle, localPosts]);
 
   // Dynamically compute 2-3 related posts for the active article based on matching categories
   const relatedPosts = useMemo(() => {
     if (!readingArticle) return [];
     
     // Find articles in the same category, excluding the current one
-    const sameCategory = BLOGS_DATA.filter(
+    const sameCategory = localPosts.filter(
       (post) => post.category === readingArticle.category && post.id !== readingArticle.id
     );
     
     // If we have fewer than 3 same-category posts, fill with other posts (excluding current)
     if (sameCategory.length < 3) {
       const remainingNeeded = 3 - sameCategory.length;
-      const others = BLOGS_DATA.filter(
+      const others = localPosts.filter(
         (post) => post.category !== readingArticle.category && post.id !== readingArticle.id
       );
       return [...sameCategory, ...others.slice(0, remainingNeeded)];
     }
     
     return sameCategory.slice(0, 3);
-  }, [readingArticle]);
+  }, [readingArticle, localPosts]);
 
   // Current comments for reading article
   const currentComments = useMemo(() => {
@@ -336,7 +378,7 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
 
                 {/* Category tabs */}
                 <div className="flex bg-surface-container rounded-full p-1 text-xs overflow-x-auto w-full sm:w-auto border border-surface-variant/30">
-                  {(['All', 'Strategy', 'SEO', 'Creative'] as const).map((cat) => (
+                  {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -354,7 +396,7 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
             </div>
 
             {/* Empty state if search yields no results */}
-            {isLoading ? (
+            {localLoading ? (
               /* Grid Skeleton Cards */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map((n) => (
@@ -387,6 +429,24 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
                   </div>
                 ))}
               </div>
+            ) : localError || localPosts.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-surface-variant border-dashed max-w-xl mx-auto shadow-sm">
+                <BookOpen className="w-12 h-12 text-primary mx-auto mb-3 opacity-60" />
+                <p className="font-headline font-bold text-sm text-on-surface">
+                  {localError ? 'Oops! Couldn\'t fetch insights' : 'No insights found'}
+                </p>
+                <p className="text-xs text-on-surface-variant mt-1 px-4">
+                  {localError || 'Our latest insights are temporarily unavailable. Please check back soon!'}
+                </p>
+                <button
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                  className="mt-4 bg-primary text-white text-xs font-headline font-bold px-5 py-2.5 rounded-full hover:opacity-95 transition-all shadow-sm"
+                >
+                  Reload Page
+                </button>
+              </div>
             ) : filteredBlogs.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-3xl border border-surface-variant border-dashed max-w-xl mx-auto shadow-sm">
                 <BookOpen className="w-12 h-12 text-primary mx-auto mb-3 opacity-60" />
@@ -406,20 +466,21 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
               /* Grid Cards */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredBlogs.map((post) => (
-                  <article 
+                  <a 
                     key={post.id}
-                    onClick={() => handleSelectArticle(post)}
-                    className="group cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
+                    href={(post as any).url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group text-left cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
                   >
                     <div>
                       {/* Card Image banner */}
                       <div className="rounded-2xl overflow-hidden aspect-[16/10] border border-surface-variant/40 shadow-sm relative">
-                        <img 
+                        <OptimizedImage 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                           alt={post.title}
                           src={post.image}
-                          loading="lazy"
-                          decoding="async"
+                          defaultWidth={400}
                         />
                         <div className="absolute top-3 left-3 bg-white/95 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-bold text-primary shadow-sm">
                           {post.category}
@@ -448,20 +509,25 @@ export default function Blogs({ readingArticle, onSelectArticle }: BlogsProps) {
 
                     <div className="pt-2 flex items-center justify-between border-t border-surface-variant/30 mt-2">
                       <div className="flex items-center gap-2">
-                        <img 
-                          className="w-6 h-6 rounded-full object-cover" 
-                          src={post.authorAvatar} 
-                          alt={post.author} 
-                          loading="lazy"
-                          decoding="async"
-                        />
+                        {post.authorAvatar && !post.authorAvatar.includes('g/1.1/default-avatar') && !post.authorAvatar.includes('b16-rounded.gif') ? (
+                          <OptimizedImage 
+                            className="w-6 h-6 rounded-full object-cover" 
+                            src={post.authorAvatar} 
+                            alt={post.author} 
+                            defaultWidth={48}
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] select-none uppercase">
+                            {post.author ? post.author.charAt(0) : 'O'}
+                          </div>
+                        )}
                         <span className="text-[10px] text-on-surface font-semibold">{post.author}</span>
                       </div>
                       <span className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:translate-x-1 transition-transform">
                         Read Article <ArrowUpRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
-                  </article>
+                  </a>
                 ))}
               </div>
             )}

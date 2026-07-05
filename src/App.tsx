@@ -23,6 +23,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, collection, setDoc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db, auth, signInWithGoogle, logOut, handleFirestoreError, OperationType } from './firebase';
 import { generateMetaTags } from './utils/seo';
+import { fetchBloggerFeed } from './lib/blogger';
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -31,6 +32,30 @@ export default function App() {
   const [readingArticle, setReadingArticle] = useState<BlogPost | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // Live Blogger feed states
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [blogsLoading, setBlogsLoading] = useState(true);
+  const [blogsError, setBlogsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchBloggerFeed()
+      .then((data) => {
+        if (!isMounted) return;
+        setBlogs(data);
+        setBlogsLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.error('Failed to load Blogger feed:', err);
+        setBlogsError('Failed to load live feed');
+        setBlogsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
   // Modal toggle states
   const [isAuditOpen, setIsAuditOpen] = useState(false);
@@ -445,15 +470,39 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {BLOGS_DATA.slice(0, 3).map((post) => (
-                    <article 
+                  {blogsLoading ? (
+                    [1, 2, 3].map((n) => (
+                      <div 
+                        key={`home-blog-skeleton-${n}`}
+                        className="bg-white p-5 rounded-3xl border border-surface-variant flex flex-col justify-between space-y-4 animate-pulse"
+                      >
+                        <div>
+                          <div className="rounded-2xl overflow-hidden aspect-[16/10] bg-neutral-200" />
+                          <div className="space-y-3 pt-4">
+                            <div className="h-3 w-1/3 bg-neutral-200 rounded" />
+                            <div className="h-6 w-3/4 bg-neutral-200 rounded" />
+                            <div className="space-y-1.5 pt-1">
+                              <div className="h-3 w-full bg-neutral-200 rounded" />
+                              <div className="h-3 w-5/6 bg-neutral-200 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-2 flex items-center justify-between border-t border-surface-variant/30 mt-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-neutral-200" />
+                            <div className="h-3 w-16 bg-neutral-200 rounded" />
+                          </div>
+                          <div className="h-3 w-16 bg-neutral-200 rounded" />
+                        </div>
+                      </div>
+                    ))
+                  ) : (blogsError || blogs.length === 0 ? BLOGS_DATA : blogs).slice(0, 3).map((post) => (
+                    <a 
                       key={post.id}
-                      onClick={() => {
-                        setReadingArticle(post);
-                        setCurrentView('blogs');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      className="group cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
+                      href={(post as any).url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group text-left cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
                     >
                       <div>
                         {/* Card Image banner */}
@@ -491,19 +540,25 @@ export default function App() {
 
                       <div className="pt-2 flex items-center justify-between border-t border-surface-variant/30 mt-2">
                         <div className="flex items-center gap-2">
-                          <OptimizedImage 
-                            className="w-6 h-6 rounded-full object-cover" 
-                            src={post.authorAvatar} 
-                            alt={post.author} 
-                            defaultWidth={48}
-                          />
+                          {post.authorAvatar && !post.authorAvatar.includes('g/1.1/default-avatar') && !post.authorAvatar.includes('b16-rounded.gif') ? (
+                            <OptimizedImage 
+                              className="w-6 h-6 rounded-full object-cover" 
+                              src={post.authorAvatar} 
+                              alt={post.author} 
+                              defaultWidth={48}
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] select-none uppercase">
+                              {post.author ? post.author.charAt(0) : 'O'}
+                            </div>
+                          )}
                           <span className="text-[10px] text-on-surface font-semibold">{post.author}</span>
                         </div>
                         <span className="inline-flex items-center gap-1 font-bold text-xs text-primary group-hover:translate-x-1 transition-transform">
                           Read Article <ArrowUpRight className="w-3.5 h-3.5" />
                         </span>
                       </div>
-                    </article>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -517,7 +572,13 @@ export default function App() {
           </>
         ) : (
           <div className="-mt-12">
-            <Blogs readingArticle={readingArticle} onSelectArticle={setReadingArticle} />
+            <Blogs 
+              readingArticle={readingArticle} 
+              onSelectArticle={setReadingArticle} 
+              livePosts={blogs}
+              isLoadingLive={blogsLoading}
+              liveError={blogsError}
+            />
           </div>
         )}
 
