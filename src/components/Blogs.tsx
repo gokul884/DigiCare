@@ -47,6 +47,33 @@ const parseInlineMarkdown = (text: string) => {
   });
 };
 
+/**
+ * Sanitizes blog content (e.g. cleans up super long alt text or titles on images to prevent giant labels).
+ */
+const cleanBlogPostContent = (contentHtml: string): string => {
+  if (typeof window === 'undefined' || !contentHtml) return contentHtml;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(contentHtml, 'text/html');
+    
+    // Clean up super long alt text / labels on all images inside the blog content to prevent giant labels
+    const imgs = doc.querySelectorAll('img');
+    for (const img of Array.from(imgs)) {
+      const alt = img.getAttribute('alt') || '';
+      if (alt.length > 100 || alt.toLowerCase().includes('create a') || alt.toLowerCase().includes('infographic') || alt.toLowerCase().includes('introduction')) {
+        // Set alt attribute to empty so it doesn't render as a giant label/tooltip/caption
+        img.setAttribute('alt', '');
+        img.removeAttribute('title');
+      }
+    }
+    
+    return doc.body.innerHTML;
+  } catch (err) {
+    console.error('Error cleaning blog content:', err);
+    return contentHtml;
+  }
+};
+
 interface BlogsProps {
   readingArticle: BlogPost | null;
   onSelectArticle: (post: BlogPost | null) => void;
@@ -334,6 +361,31 @@ export default function Blogs({
     return commentsMap[readingArticle.id] || [];
   }, [readingArticle, commentsMap]);
 
+  // Check if the blog body already has the featured image embedded
+  const hasFeaturedImageInContent = useMemo(() => {
+    if (!readingArticle || !readingArticle.image || !readingArticle.content) return false;
+    
+    const cleanUrl = (url: string) => {
+      try {
+        const u = new URL(url);
+        return u.pathname + u.search;
+      } catch {
+        return url;
+      }
+    };
+    
+    const targetClean = cleanUrl(readingArticle.image).toLowerCase();
+    const contentLower = readingArticle.content.toLowerCase();
+    
+    return contentLower.includes(targetClean) || contentLower.includes(readingArticle.image.toLowerCase());
+  }, [readingArticle]);
+
+  // Clean the main blog body to avoid duplicate thumbnail image rendering
+  const cleanedContent = useMemo(() => {
+    if (!readingArticle) return '';
+    return cleanBlogPostContent(readingArticle.content);
+  }, [readingArticle]);
+
   return (
     <section id="blogs" className="py-24 bg-background relative z-10">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
@@ -468,9 +520,11 @@ export default function Blogs({
                 {filteredBlogs.map((post) => (
                   <a 
                     key={post.id}
-                    href={(post as any).url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`#/blog/${post.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSelectArticle(post);
+                    }}
                     className="group text-left cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
                   >
                     <div>
@@ -517,8 +571,8 @@ export default function Blogs({
                             defaultWidth={48}
                           />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] select-none uppercase">
-                            {post.author ? post.author.charAt(0) : 'O'}
+                          <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-headline font-bold text-[10px] select-none uppercase border border-primary/20">
+                            {post.author ? post.author.split(' ').map((n: string) => n.charAt(0)).join('').substring(0, 2) : 'GK'}
                           </div>
                         )}
                         <span className="text-[10px] text-on-surface font-semibold">{post.author}</span>
@@ -651,37 +705,46 @@ export default function Blogs({
                   </div>
  
                   {/* Featured Hero Banner */}
-                  <div className="rounded-2xl overflow-hidden aspect-[16/9] border border-surface-variant/50 shadow-soft">
-                    <img 
-                      className="w-full h-full object-cover" 
-                      alt={readingArticle.title} 
-                      src={readingArticle.image} 
-                      decoding="async"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
+                  {!hasFeaturedImageInContent && (
+                    <div className="rounded-2xl overflow-hidden aspect-[16/9] border border-surface-variant/50 shadow-soft">
+                      <img 
+                        className="w-full h-full object-cover" 
+                        alt={readingArticle.title} 
+                        src={readingArticle.image} 
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  )}
  
                   {/* Formatted Reading Content */}
                   <div className="max-w-[70ch] mx-auto w-full break-words text-[16px] md:text-[18px] lg:text-[19px] text-on-surface-variant leading-[1.8] font-normal font-sans border-b border-surface-variant/30 pb-12">
-                    <ReactMarkdown
-                      components={{
-                        h1: ({node, ...props}) => <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface pt-8 pb-3 tracking-tight leading-tight" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="font-headline font-bold text-2.5xl md:text-3.5xl text-on-surface pt-8 pb-3 tracking-tight leading-snug" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="font-headline font-semibold text-xl md:text-2xl text-on-surface pt-6 pb-2 tracking-tight leading-snug" {...props} />,
-                        h4: ({node, ...props}) => <h4 className="font-headline font-semibold text-lg md:text-xl text-on-surface pt-4 pb-2 tracking-tight leading-snug" {...props} />,
-                        p: ({node, ...props}) => <p className="text-on-surface-variant font-normal leading-[1.8] mb-6" {...props} />,
-                        ul: ({node, ...props}) => <ul className="list-disc pl-6 space-y-3 my-4 text-on-surface-variant" {...props} />,
-                        ol: ({node, ...props}) => <ol className="list-decimal pl-6 space-y-3 my-4 text-on-surface-variant" {...props} />,
-                        li: ({node, ...props}) => <li className="pl-1 leading-[1.8]" {...props} />,
-                        strong: ({node, ...props}) => <strong className="font-semibold text-on-surface" {...props} />,
-                        em: ({node, ...props}) => <em className="italic" {...props} />,
-                        code: ({node, ...props}) => <code className="bg-surface-variant/30 px-1.5 py-0.5 rounded font-mono text-sm text-primary" {...props} />,
-                        pre: ({node, ...props}) => <pre className="bg-surface-variant/20 p-4 rounded-xl font-mono text-sm overflow-x-auto my-6 border border-surface-variant/40" {...props} />,
-                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-6 text-on-surface-variant/90" {...props} />
-                      }}
-                    >
-                      {readingArticle.content}
-                    </ReactMarkdown>
+                    {readingArticle.content.trim().startsWith('<') || /<[a-z][\s\S]*>/i.test(readingArticle.content) ? (
+                      <div 
+                        className="prose-html space-y-6 text-on-surface-variant"
+                        dangerouslySetInnerHTML={{ __html: cleanedContent }}
+                      />
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          h1: ({node, ...props}) => <h1 className="font-headline font-bold text-3xl md:text-4xl text-on-surface pt-8 pb-3 tracking-tight leading-tight" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="font-headline font-bold text-2.5xl md:text-3.5xl text-on-surface pt-8 pb-3 tracking-tight leading-snug" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="font-headline font-semibold text-xl md:text-2xl text-on-surface pt-6 pb-2 tracking-tight leading-snug" {...props} />,
+                          h4: ({node, ...props}) => <h4 className="font-headline font-semibold text-lg md:text-xl text-on-surface pt-4 pb-2 tracking-tight leading-snug" {...props} />,
+                          p: ({node, ...props}) => <p className="text-on-surface-variant font-normal leading-[1.8] mb-6" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc pl-6 space-y-3 my-4 text-on-surface-variant" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal pl-6 space-y-3 my-4 text-on-surface-variant" {...props} />,
+                          li: ({node, ...props}) => <li className="pl-1 leading-[1.8]" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-semibold text-on-surface" {...props} />,
+                          em: ({node, ...props}) => <em className="italic" {...props} />,
+                          code: ({node, ...props}) => <code className="bg-surface-variant/30 px-1.5 py-0.5 rounded font-mono text-sm text-primary" {...props} />,
+                          pre: ({node, ...props}) => <pre className="bg-surface-variant/20 p-4 rounded-xl font-mono text-sm overflow-x-auto my-6 border border-surface-variant/40" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-4 italic my-6 text-on-surface-variant/90" {...props} />
+                        }}
+                      >
+                        {cleanedContent}
+                      </ReactMarkdown>
+                    )}
                   </div>
 
                   {/* Related Posts Section based on matching tags / categories */}
@@ -701,9 +764,13 @@ export default function Blogs({
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         {relatedPosts.map((post) => (
-                          <div 
+                          <a 
                             key={post.id}
-                            onClick={() => handleSelectArticle(post)}
+                            href={`#/blog/${post.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleSelectArticle(post);
+                            }}
                             className="group cursor-pointer bg-surface-container/30 hover:bg-surface-container/60 p-4 rounded-2xl border border-surface-variant/30 hover:border-surface-variant/60 transition-all duration-300 flex flex-col justify-between space-y-4"
                           >
                             <div className="space-y-3">
@@ -735,7 +802,7 @@ export default function Blogs({
                                 Read Article <ArrowUpRight className="w-3 h-3" />
                               </span>
                             </div>
-                          </div>
+                          </a>
                         ))}
                       </div>
                     </div>

@@ -117,7 +117,7 @@ export default function Navbar({ onContactClick, onAdminToggle, isAdminOpen, lea
             <a 
               key={item.id}
               onClick={(e) => handleLinkClick(e, item.id)}
-              href={`#${item.id}`}
+              href={item.id === 'blogs' ? '#/blog' : `#${item.id}`}
               className={`transition-all px-4 py-1.5 rounded-full relative ${
                 activeSection === item.id 
                   ? 'bg-primary-container text-on-primary-container font-extrabold shadow-sm' 
@@ -164,7 +164,7 @@ export default function Navbar({ onContactClick, onAdminToggle, isAdminOpen, lea
             <a 
               key={item.id}
               onClick={(e) => handleLinkClick(e, item.id)}
-              href={`#${item.id}`}
+              href={item.id === 'blogs' ? '#/blog' : `#${item.id}`}
               className={`py-1.5 px-3 rounded-lg transition-colors ${
                 activeSection === item.id 
                   ? 'bg-primary/10 text-primary font-extrabold' 

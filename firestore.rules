@@ -65,5 +65,11 @@ service cloud.firestore {
         incoming().diff(resource.data).affectedKeys().hasOnly(['status'])
       );
     }
+
+    // Posts collection - Publicly readable, write-protected
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

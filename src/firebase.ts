@@ -28,17 +28,30 @@ export const db = initializeFirestore(app, {
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Connection testing as mandated in the guidelines, with robust offline check
+// Connection testing as mandated in the guidelines, with robust offline check and fast timeout
 async function testConnection() {
   if (typeof window !== 'undefined' && !window.navigator.onLine) {
     console.warn("Please check your Firebase configuration: the client is currently offline.");
     return;
   }
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    const testDocRef = doc(db, 'test', 'connection');
+    // Wrap with a 1.5s timeout to avoid blocking or logging slow warnings
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Connection test timed out')), 1500);
+      getDocFromServer(testDocRef)
+        .then(() => {
+          clearTimeout(timer);
+          resolve();
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message.includes('the client is offline') || error.message.includes('unavailable') || (error as any).code === 'unavailable') {
+      if (error.message.includes('the client is offline') || error.message.includes('unavailable') || error.message.includes('timeout') || (error as any).code === 'unavailable') {
         console.warn("Please check your Firebase configuration: the client is currently offline or the Firestore backend is unreachable.");
       } else {
         console.warn("Firebase Firestore connection test info:", error.message);

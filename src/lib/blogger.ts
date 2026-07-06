@@ -123,9 +123,24 @@ export const mapBloggerPost = (entry: any): BlogPost & { url: string } => {
 };
 
 /**
- * Fetches the Blogger JSON feed via JSONP and returns mapped BlogPosts to circumvent CORS limitations.
+ * Fetches the Blogger JSON feed. It first attempts to use the local Vite server proxy
+ * (to circumvent CORS and sandbox script/JSONP restrictions). If that fails, it
+ * falls back to a JSONP script-injection approach.
  */
 export const fetchBloggerFeed = async (): Promise<(BlogPost & { url: string })[]> => {
+  // 1. Try local dev server proxy first
+  try {
+    const response = await fetch('/api/blogger-feed');
+    if (response.ok) {
+      const data = await response.json();
+      const entries = data.feed?.entry || [];
+      return entries.map(mapBloggerPost);
+    }
+  } catch (err) {
+    console.warn('Vite server proxy failed, trying JSONP fallback...', err);
+  }
+
+  // 2. Fallback to JSONP script injection
   return new Promise((resolve, reject) => {
     // Generate a unique callback name to prevent conflicts
     const callbackName = `blogger_jsonp_callback_${Math.round(Math.random() * 1000000)}`;

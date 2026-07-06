@@ -23,7 +23,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, collection, setDoc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db, auth, signInWithGoogle, logOut, handleFirestoreError, OperationType } from './firebase';
 import { generateMetaTags } from './utils/seo';
-import { fetchBloggerFeed } from './lib/blogger';
+import { fetchFirestoreBlogs } from './lib/blogClient';
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -40,7 +40,7 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
-    fetchBloggerFeed()
+    fetchFirestoreBlogs()
       .then((data) => {
         if (!isMounted) return;
         setBlogs(data);
@@ -48,8 +48,8 @@ export default function App() {
       })
       .catch((err) => {
         if (!isMounted) return;
-        console.error('Failed to load Blogger feed:', err);
-        setBlogsError('Failed to load live feed');
+        console.error('Failed to load Firestore blogs:', err);
+        setBlogsError('Failed to load blog insights');
         setBlogsLoading(false);
       });
     return () => {
@@ -104,6 +104,65 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Client-Side Hash Router Synchronizer
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#/blog/') || hash.startsWith('#blog/')) {
+        const slug = hash.includes('/') ? hash.split('/').pop() : '';
+        if (slug) {
+          const found = blogs.find(b => b.id === slug);
+          if (found) {
+            setReadingArticle(found);
+            setCurrentView('blogs');
+            return;
+          }
+        }
+      } else if (hash === '#/blog' || hash === '#blog') {
+        setReadingArticle(null);
+        setCurrentView('blogs');
+        return;
+      } else if (hash === '#home' || hash === '#/home' || !hash) {
+        setReadingArticle(null);
+        setCurrentView('main');
+        return;
+      }
+      
+      // Fallback for custom dashboard triggers
+      if (hash === '#blogs' || hash.includes('#blogs?')) {
+        setCurrentView('blogs');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    // Sync immediately if blogs list is loaded
+    if (blogs.length > 0) {
+      handleHashChange();
+    }
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [blogs]);
+
+  // Sync state back to hash when navigating
+  useEffect(() => {
+    if (currentView === 'blogs') {
+      if (readingArticle) {
+        if (window.location.hash !== `#/blog/${readingArticle.id}`) {
+          window.location.hash = `#/blog/${readingArticle.id}`;
+        }
+      } else {
+        if (window.location.hash !== `#/blog`) {
+          window.location.hash = `#/blog`;
+        }
+      }
+    } else {
+      // Clear hash if going back home, except other section anchors
+      if (window.location.hash.startsWith('#/blog') || window.location.hash.startsWith('#blog')) {
+        window.location.hash = '';
+      }
+    }
+  }, [currentView, readingArticle]);
+
   // Professional SEO & GEO Dynamic Meta Tag Generator
   useEffect(() => {
     if (readingArticle) {
@@ -115,7 +174,7 @@ export default function App() {
         : `${readingArticle.category}, ${readingArticle.title}, SEO, GEO, Web Development, OmniRange`;
       const postAuthor = readingArticle.author;
       const postImage = readingArticle.image;
-      const postUrl = `https://omniorange.vercel.app/blog/${readingArticle.id}`;
+      const postUrl = `https://omnirange.vercel.app/blog/${readingArticle.id}`;
 
       generateMetaTags({
         title: postTitle,
@@ -132,7 +191,7 @@ export default function App() {
       const blogsTitle = "Growth & Tech Insights Blog | OmniRange";
       const blogsDesc = "Read expert articles, guides, and case studies on modern SEO, Generative Engine Optimization (GEO), custom website development, and content strategy.";
       const blogsKeywords = "blog, digital marketing insights, search engine optimization tips, generative engine optimization, content creation guides, OmniRange";
-      const blogsUrl = "https://omniorange.vercel.app/blog";
+      const blogsUrl = "https://omnirange.vercel.app/blog";
       const blogsImage = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=1200";
 
       generateMetaTags({
@@ -150,7 +209,7 @@ export default function App() {
       const homeTitle = "OmniRange | Best SEO, GEO & Web Performance Agency";
       const homeDesc = "OmniRange is a high-performance digital marketing agency featuring advanced SEO, GEO, PPC, analytics services, client case studies, dynamic testimonial carousels, and an interactive contact manager.";
       const homeKeywords = "SEO, GEO, Generative Engine Optimization, Search Engine Optimization, Website Development, Content Creation, OmniRange, digital marketing, ChatGPT search optimization, Gemini visibility, Perplexity optimization";
-      const homeUrl = "https://omniorange.vercel.app/";
+      const homeUrl = "https://omnirange.vercel.app/";
       const homeImage = "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=1200";
 
       generateMetaTags({
@@ -499,9 +558,13 @@ export default function App() {
                   ) : (blogsError || blogs.length === 0 ? BLOGS_DATA : blogs).slice(0, 3).map((post) => (
                     <a 
                       key={post.id}
-                      href={(post as any).url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`#/blog/${post.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setReadingArticle(post);
+                        setCurrentView('blogs');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
                       className="group text-left cursor-pointer bg-white p-5 rounded-3xl border border-surface-variant shadow-soft hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4"
                     >
                       <div>
@@ -602,7 +665,7 @@ export default function App() {
               {/* Social Media Share / Follow Icons */}
               <div className="flex items-center gap-3 pt-2">
                 <a 
-                  href="https://www.instagram.com/omniorange" 
+                  href="https://www.instagram.com/omnirange" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="p-2 rounded-full bg-white/5 hover:bg-white/10 hover:text-primary-container transition-all text-secondary-fixed text-white cursor-pointer"
@@ -737,7 +800,7 @@ export default function App() {
           {/* Bottom Bar copyright */}
           <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-secondary-fixed opacity-60">
             <p>
-              &copy; {new Date().getFullYear()} <a href="https://omniorange.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-bold">OmniRange</a>, All Rights Reserved
+              &copy; {new Date().getFullYear()} <a href="https://omnirange.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-bold">OmniRange</a>, All Rights Reserved
             </p>
             <p className="flex items-center gap-1">
               Crafted for your digital growth with <Heart className="w-3 h-3 text-red-500 fill-red-500" />
