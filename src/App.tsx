@@ -32,6 +32,7 @@ export default function App() {
   const [readingArticle, setReadingArticle] = useState<BlogPost | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isTidioVisible, setIsTidioVisible] = useState(false);
   
   // Live Blogger feed states
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -102,6 +103,50 @@ export default function App() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Dynamically load Tidio live chat client script and manage its visibility state
+  useEffect(() => {
+    // Define global callback in case Tidio calls it on load
+    (window as any).onTidioChatReady = () => {
+      setIsTidioVisible(true);
+    };
+
+    const handleTidioReady = () => {
+      setIsTidioVisible(true);
+    };
+
+    document.addEventListener('tidioChat-ready', handleTidioReady);
+
+    const script = document.createElement('script');
+    script.src = "//code.tidio.co/4dbgyr0rldl6d1rchbepoawm7uax3kap.js";
+    script.async = true;
+    
+    script.onload = () => {
+      if ((window as any).tidioChatApi) {
+        setIsTidioVisible(true);
+      }
+    };
+
+    document.body.appendChild(script);
+
+    // Fallback polling to detect Tidio container readiness
+    const interval = setInterval(() => {
+      if ((window as any).tidioChatApi) {
+        setIsTidioVisible(true);
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('tidioChat-ready', handleTidioReady);
+      try {
+        document.body.removeChild(script);
+      } catch (e) {
+        // ignore if already removed
+      }
+    };
   }, []);
 
   // Client-Side Hash Router Synchronizer
@@ -842,11 +887,11 @@ export default function App() {
         onSignOut={logOut}
       />
 
-      {/* Floating Back to Top button with high-end smooth scrolling and hover interaction */}
+      {/* Floating Back to Top button with high-end smooth scrolling, higher z-index, and dynamic offset for Tidio Chat */}
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 p-3.5 rounded-full bg-[#1A56DB] hover:bg-[#0b3b9c] text-white shadow-xl shadow-black/15 hover:shadow-black/25 active:scale-95 hover:scale-105 transition-all duration-300 z-50 flex items-center justify-center cursor-pointer group border border-white/10"
+          className={`fixed ${isTidioVisible ? 'bottom-28' : 'bottom-6'} right-6 p-3.5 rounded-full bg-[#1A56DB] hover:bg-[#0b3b9c] text-white shadow-xl shadow-black/15 hover:shadow-black/25 active:scale-95 hover:scale-105 transition-all duration-300 z-[100] flex items-center justify-center cursor-pointer group border border-white/10`}
           aria-label="Back to top"
           id="back-to-top"
         >

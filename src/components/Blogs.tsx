@@ -152,20 +152,31 @@ export default function Blogs({
     }
   }, [livePosts, isLoadingLive, liveError]);
 
-  // Dynamically extract categories from live posts
+  // Predefined and dynamically extracted categories for reliable navigation
   const categories = useMemo(() => {
-    const labels = new Set<string>();
+    // Standard requested categories always present
+    const labels = new Set<string>(['SEO', 'PPC', 'Analytics', 'Strategy']);
     localPosts.forEach(post => {
       if (post.category) {
-        labels.add(post.category);
+        const cat = post.category.trim();
+        if (cat) {
+          const norm = cat.toUpperCase();
+          if (norm === 'SEO') labels.add('SEO');
+          else if (norm === 'PPC' || norm === 'SEM' || norm === 'PAID') labels.add('PPC');
+          else if (norm === 'ANALYTICS' || norm === 'DATA') labels.add('Analytics');
+          else if (norm === 'STRATEGY') labels.add('Strategy');
+          else {
+            labels.add(cat);
+          }
+        }
       }
     });
     return ['All', ...Array.from(labels)];
   }, [localPosts]);
 
-  // Dynamically inject BlogPosting JSON-LD for individual articles
+  // Dynamically inject Article and BlogPosting JSON-LD for individual articles to optimize SERP
   useEffect(() => {
-    // Clean up any existing BlogPosting JSON-LD script first
+    // Clean up any existing JSON-LD script first
     const existingScript = document.getElementById('blogposting-jsonld');
     if (existingScript) {
       existingScript.remove();
@@ -184,11 +195,29 @@ export default function Blogs({
         return '2026-06-28';
       };
 
+      const getWordCount = (content: string): number => {
+        if (!content) return 0;
+        return content.trim().split(/\s+/).length;
+      };
+
+      const cleanArticleBody = (content: string): string => {
+        if (!content) return '';
+        // Remove HTML tags
+        let plain = content.replace(/<[^>]*>/g, '');
+        // Remove markdown formatting
+        plain = plain
+          .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // link
+          .replace(/[*_~`#\-+>]/g, '') // formatting chars
+          .replace(/\s+/g, ' ') // collapse whitespaces
+          .trim();
+        return plain.length > 1000 ? plain.substring(0, 1000) + '...' : plain;
+      };
+
       const formattedDate = formatSchemaDate(readingArticle.date);
 
       const jsonLD = {
         "@context": "https://schema.org",
-        "@type": "BlogPosting",
+        "@type": ["Article", "BlogPosting"],
         "@id": `${window.location.origin}/#blogs?id=${readingArticle.id}`,
         "headline": readingArticle.title,
         "description": readingArticle.description,
@@ -213,7 +242,10 @@ export default function Blogs({
           "@type": "WebPage",
           "@id": `${window.location.origin}/#blogs`
         },
-        "keywords": readingArticle.metaKeywords || ""
+        "keywords": readingArticle.metaKeywords || "",
+        "articleBody": cleanArticleBody(readingArticle.content),
+        "wordCount": getWordCount(readingArticle.content),
+        "inLanguage": "en-US"
       };
 
       const script = document.createElement('script');
@@ -260,10 +292,69 @@ export default function Blogs({
   const [newCommentText, setNewCommentText] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
 
-  // Filter and Search logic combined
+  // Filter and Search logic combined with intelligent keyword matching
   const filteredBlogs = useMemo(() => {
     return localPosts.filter((post) => {
-      const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
+      let matchesCategory = false;
+      if (selectedCategory === 'All') {
+        matchesCategory = true;
+      } else {
+        const catLower = post.category.toLowerCase();
+        const selCatLower = selectedCategory.toLowerCase();
+        
+        // Match 1: Direct category term matching
+        if (catLower === selCatLower || catLower.includes(selCatLower) || selCatLower.includes(catLower)) {
+          matchesCategory = true;
+        } 
+        // Match 2: Intelligent fallback using keywords in title or content for each category
+        else if (selCatLower === 'seo') {
+          const titleLower = post.title.toLowerCase();
+          const contentLower = post.content.toLowerCase();
+          matchesCategory = 
+            titleLower.includes('seo') || 
+            titleLower.includes('web vitals') || 
+            titleLower.includes('search') || 
+            contentLower.includes('search engine') ||
+            contentLower.includes('technical seo') ||
+            contentLower.includes('ranking');
+        } 
+        else if (selCatLower === 'ppc') {
+          const titleLower = post.title.toLowerCase();
+          const contentLower = post.content.toLowerCase();
+          matchesCategory = 
+            titleLower.includes('ppc') || 
+            titleLower.includes('ad spend') || 
+            titleLower.includes('advertising') || 
+            titleLower.includes('google ads') || 
+            contentLower.includes('smart bidding') ||
+            contentLower.includes('paid media') ||
+            contentLower.includes('conversion triggers');
+        } 
+        else if (selCatLower === 'analytics') {
+          const titleLower = post.title.toLowerCase();
+          const contentLower = post.content.toLowerCase();
+          matchesCategory = 
+            titleLower.includes('analytics') || 
+            titleLower.includes('attribution') || 
+            titleLower.includes('metrics') || 
+            titleLower.includes('tracking') || 
+            contentLower.includes('attribution models') ||
+            contentLower.includes('ga4') ||
+            contentLower.includes('data');
+        }
+        else if (selCatLower === 'strategy') {
+          const titleLower = post.title.toLowerCase();
+          const contentLower = post.content.toLowerCase();
+          matchesCategory = 
+            titleLower.includes('strategy') || 
+            titleLower.includes('growth') || 
+            titleLower.includes('b2b') || 
+            contentLower.includes('funnel') ||
+            contentLower.includes('acquisition') ||
+            contentLower.includes('programmatic');
+        }
+      }
+
       const matchesSearch = 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -479,55 +570,57 @@ export default function Blogs({
              BLOG LISTING GRID VIEW
              ========================================================= */
           <>
-            {/* Header and Controls */}
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
-              <div className="space-y-4 text-center lg:text-left">
-                <h2 className="font-headline font-extrabold text-headline-lg text-on-surface">
-                  Our Insights
-                </h2>
-                <p className="font-sans text-body-md text-on-surface-variant">
-                  Expert growth analysis and data strategy takes on the evolving B2B marketing landscape.
-                </p>
-              </div>
+            {/* Header and Controls with prominent Category Pills */}
+            <div className="mb-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-surface-variant/20 mb-8">
+                <div className="space-y-3 text-center md:text-left">
+                  <h2 className="font-headline font-extrabold text-headline-lg text-on-surface">
+                    Our Insights
+                  </h2>
+                  <p className="font-sans text-body-md text-on-surface-variant">
+                    Expert growth analysis and data strategy takes on the evolving B2B marketing landscape.
+                  </p>
+                </div>
 
-              {/* Interactive filter search controls */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full lg:w-auto">
                 {/* Search Bar */}
-                <div className="relative w-full sm:w-64">
+                <div className="relative w-full md:w-72 shrink-0">
                   <SearchIcon className="absolute left-3.5 top-3 w-4 h-4 text-on-surface-variant" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search marketing articles..."
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-surface-variant rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-primary transition-all text-on-surface shadow-sm"
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-surface-variant rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-primary transition-all text-on-surface shadow-sm"
                   />
                   {searchQuery && (
                     <button 
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-2.5 text-on-surface-variant hover:text-primary"
+                      className="absolute right-3.5 top-3 text-on-surface-variant hover:text-primary"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
+              </div>
 
-                {/* Category tabs */}
-                <div className="flex bg-surface-container rounded-full p-1 text-xs overflow-x-auto w-full sm:w-auto border border-surface-variant/30">
-                  {categories.map((cat) => (
+              {/* Clickable Category Pills at the very top of the blog grid section */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                {categories.map((cat) => {
+                  const isActive = selectedCategory === cat;
+                  return (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-1.5 rounded-full font-semibold transition-all whitespace-nowrap flex-1 sm:flex-none ${
-                        selectedCategory === cat
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'text-on-surface hover:text-primary'
+                      className={`px-5 py-2 rounded-full font-sans font-semibold text-xs transition-all duration-300 whitespace-nowrap cursor-pointer ${
+                        isActive
+                          ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105'
+                          : 'bg-surface-container hover:bg-surface-variant/30 text-on-surface hover:text-primary border border-surface-variant/10'
                       }`}
                     >
                       {cat}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </div>
 
